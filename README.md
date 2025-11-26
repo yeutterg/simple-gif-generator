@@ -46,20 +46,6 @@ A professional-grade, client-side video-to-GIF converter built with React and Ty
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Run with AI Studio
-
-View and edit your app in AI Studio: https://ai.studio/apps/drive/1EL5NVrliAB8fUNw5yb4K63UZvgmMLyqN
-
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-2. Run the app:
-   ```bash
-   npm run dev
-   ```
-
 ## Deploy to Vercel
 
 ### One-Click Deploy
