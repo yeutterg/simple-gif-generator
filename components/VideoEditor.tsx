@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import Cropper from 'react-easy-crop';
 import { Point, Area } from 'react-easy-crop/types';
 import { CropArea, GifSettings } from '../types';
-import { QUALITY_PRESETS } from '../constants';
+import { RESOLUTION_PRESETS, MIN_OUTPUT_WIDTH, MAX_OUTPUT_WIDTH, DEFAULT_OUTPUT_WIDTH } from '../constants';
 import { Button } from './Button';
 import { Sliders, Check, Monitor, Smartphone, Square, Scan } from 'lucide-react';
 
@@ -29,7 +29,7 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ videoUrl, onConfirm, o
   // Settings State
   const [fps, setFps] = useState(15);
   const [speed, setSpeed] = useState(1);
-  const [quality, setQuality] = useState<'low' | 'medium' | 'high'>('medium');
+  const [outputWidth, setOutputWidth] = useState(DEFAULT_OUTPUT_WIDTH);
   
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -55,7 +55,8 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ videoUrl, onConfirm, o
       crop: cropData,
       fps,
       speed,
-      quality,
+      quality: 'medium', // Keep for backwards compatibility
+      outputWidth,
       startTime: 0,
       endTime: 0 // Not implemented UI for timeline trimming yet for simplicity
     });
@@ -121,24 +122,37 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ videoUrl, onConfirm, o
             </div>
           </div>
 
-          {/* Quality Selector */}
+          {/* Resolution Selector */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-slate-300">Quality / Size</label>
-            <div className="grid grid-cols-3 gap-2">
-              {(Object.keys(QUALITY_PRESETS) as Array<keyof typeof QUALITY_PRESETS>).map((q) => (
+            <div className="flex justify-between">
+              <label className="text-sm font-medium text-slate-300">Output Width</label>
+              <span className="text-xs font-mono text-brand-400 bg-brand-900/30 px-2 py-0.5 rounded">{outputWidth}px</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2 mb-2">
+              {RESOLUTION_PRESETS.map((preset) => (
                 <button
-                  key={q}
-                  onClick={() => setQuality(q)}
-                  className={`px-2 py-2 text-xs font-semibold rounded-md border transition-all ${
-                    quality === q
+                  key={preset.width}
+                  onClick={() => setOutputWidth(preset.width)}
+                  className={`px-2 py-1.5 text-xs font-semibold rounded-md border transition-all ${
+                    outputWidth === preset.width
                       ? 'bg-brand-600 border-brand-500 text-white shadow-lg shadow-brand-900/20'
                       : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-750'
                   }`}
                 >
-                  {q.toUpperCase()}
+                  {preset.label}
                 </button>
               ))}
             </div>
+            <input
+              type="range"
+              min={MIN_OUTPUT_WIDTH}
+              max={MAX_OUTPUT_WIDTH}
+              step="10"
+              value={outputWidth}
+              onChange={(e) => setOutputWidth(Number(e.target.value))}
+              className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-500"
+            />
+            <p className="text-xs text-slate-500">Higher resolution = better quality but larger file size.</p>
           </div>
 
           {/* FPS Slider */}

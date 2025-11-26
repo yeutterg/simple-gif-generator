@@ -1,6 +1,6 @@
 import { createFFmpeg, fetchFile, FFmpeg } from '@ffmpeg/ffmpeg';
 import { GifSettings } from '../types';
-import { QUALITY_PRESETS } from '../constants';
+import { MIN_OUTPUT_WIDTH, MAX_OUTPUT_WIDTH, DEFAULT_OUTPUT_WIDTH } from '../constants';
 
 class FFmpegService {
   private ffmpeg: FFmpeg;
@@ -155,9 +155,8 @@ class FFmpegService {
         }
       }
 
-      // Scale - validate quality preset
-      const qualityKey = settings.quality in QUALITY_PRESETS ? settings.quality : 'medium';
-      const targetWidth = QUALITY_PRESETS[qualityKey].scale;
+      // Scale - use custom output width with validation
+      const targetWidth = Math.max(MIN_OUTPUT_WIDTH, Math.min(MAX_OUTPUT_WIDTH, settings.outputWidth || DEFAULT_OUTPUT_WIDTH));
       filters.push(`scale=${targetWidth}:-2:flags=lanczos`);
 
       // Speed - validate range
