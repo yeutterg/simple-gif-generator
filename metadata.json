@@ -1,0 +1,5 @@
+{
+  "name": "GifSmith",
+  "description": "A professional-grade, client-side video to GIF converter. Features precise cropping, speed control, frame rate adjustments, and AI-powered caption generation.",
+  "requestFramePermissions": []
+}
