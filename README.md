@@ -6,7 +6,7 @@ A professional-grade, client-side video-to-GIF converter built with React and Ty
 
 - **100% Client-Side Processing** - Your videos never leave your device. All conversion happens locally using FFmpeg WebAssembly
 - **Precise Cropping** - Interactive crop tool with preset aspect ratios (16:9, 9:16, 1:1, or free-form)
-- **Quality Control** - Three output presets (Low/Medium/High) optimized for different use cases
+- **Custom Resolution** - Set output width from 160px to 1280px with preset buttons or slider
 - **Speed Adjustment** - Create slow-motion (0.5x) or sped-up (2x) GIFs
 - **Frame Rate Control** - Adjustable FPS (5-30) for smooth animations or smaller file sizes
 - **Optimized Output** - Two-pass encoding with palette generation for vibrant, compact GIFs
@@ -100,6 +100,48 @@ For FFmpeg WASM to work properly, your deployment needs specific security header
 
 > Note: The app includes a SharedArrayBuffer polyfill for environments without these headers, but performance may vary.
 
+## Deploy with Docker
+
+### Using Docker Compose (Recommended)
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/gifsmith.git
+   cd gifsmith
+   ```
+
+2. Build and run:
+   ```bash
+   docker compose up -d
+   ```
+
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+To stop the container:
+```bash
+docker compose down
+```
+
+### Using Docker Directly
+
+1. Build the image:
+   ```bash
+   docker build -t gifsmith .
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -d -p 3000:80 --name gifsmith gifsmith
+   ```
+
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+The Docker setup includes:
+- Multi-stage build for smaller image size
+- Nginx with COOP/COEP headers pre-configured for SharedArrayBuffer support
+- Gzip compression enabled
+- Static asset caching
+
 ## Browser Compatibility
 
 | Browser | Support |
@@ -139,14 +181,14 @@ The video codec may not be compatible:
 - Avoid videos with uncommon codecs (HEVC/H.265 may not work)
 
 ### GIF quality is poor
-- Increase the quality preset to "High"
+- Increase the output resolution (use slider or 800px preset)
 - Increase the frame rate (higher FPS = smoother but larger)
 - For best results, use videos with good lighting and minimal fast motion
 
 ## How It Works
 
 1. **Upload** - Select a video file (validated for type and size)
-2. **Edit** - Crop, adjust speed, set quality and frame rate
+2. **Edit** - Crop, adjust speed, resolution, and frame rate
 3. **Process** - Three-step FFmpeg pipeline:
    - Pre-process video (apply filters, crop, scale)
    - Generate optimized 256-color palette
