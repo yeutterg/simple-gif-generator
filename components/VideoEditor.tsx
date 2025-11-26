@@ -38,15 +38,18 @@ export const VideoEditor: React.FC<VideoEditorProps> = ({ videoUrl, onConfirm, o
   }, []);
 
   const handleGenerate = () => {
-    if (!croppedAreaPixels) return;
+    // If no crop area selected, use null (will process full video)
+    let cropData: CropArea | null = null;
 
-    // Convert pixel crop to our generic type
-    const cropData: CropArea = {
-      x: croppedAreaPixels.x,
-      y: croppedAreaPixels.y,
-      width: croppedAreaPixels.width,
-      height: croppedAreaPixels.height
-    };
+    if (croppedAreaPixels && croppedAreaPixels.width > 0 && croppedAreaPixels.height > 0) {
+      // Convert pixel crop to our generic type
+      cropData = {
+        x: Math.max(0, croppedAreaPixels.x),
+        y: Math.max(0, croppedAreaPixels.y),
+        width: croppedAreaPixels.width,
+        height: croppedAreaPixels.height
+      };
+    }
 
     onConfirm({
       crop: cropData,

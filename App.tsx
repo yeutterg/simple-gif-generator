@@ -28,6 +28,19 @@ export default function App() {
     };
   }, []);
 
+  // Cleanup old URLs when new files are loaded
+  useEffect(() => {
+    return () => {
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+    };
+  }, [videoUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (gifUrl) URL.revokeObjectURL(gifUrl);
+    };
+  }, [gifUrl]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
@@ -89,10 +102,16 @@ export default function App() {
       // 2. Ask Gemini
       const result = await geminiService.generateCaption(frameBlob);
       setAiCaption(result);
-    } catch (err) {
-      console.error(err);
-      // Fallback
-      setAiCaption({ caption: "Look at this!", hashtags: ["#wow"] });
+    } catch (err: any) {
+      console.error("AI Caption error:", err);
+      // Show a user-friendly error but still provide a fallback caption
+      const errorMessage = err.message || "Failed to generate AI caption";
+      // Only show error for non-API key related issues (API key issues have their own fallback)
+      if (!errorMessage.includes("API key")) {
+        setError(`AI Caption: ${errorMessage}. Using fallback caption.`);
+      }
+      // Fallback caption
+      setAiCaption({ caption: "Check this out!", hashtags: ["#gif", "#awesome"] });
     } finally {
       setIsAiLoading(false);
     }
