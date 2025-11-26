@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, X, Download, Wand2, Sparkles, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Upload, X, Download, AlertTriangle, RefreshCw } from 'lucide-react';
 import { ffmpegService } from './services/ffmpegService';
-import { geminiService } from './services/geminiService';
 import { VideoEditor } from './components/VideoEditor';
 import { Button } from './components/Button';
-import { GifSettings, ProcessingStatus, AiCaptionResult } from './types';
-import { QUALITY_PRESETS, MAX_FILE_SIZE } from './constants';
+import { GifSettings, ProcessingStatus } from './types';
+import { MAX_FILE_SIZE } from './constants';
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
@@ -14,10 +13,6 @@ export default function App() {
   const [progress, setProgress] = useState(0);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [gifSize, setGifSize] = useState<number>(0);
-  
-  // AI Features
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiCaption, setAiCaption] = useState<AiCaptionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,10 +23,23 @@ export default function App() {
     };
   }, []);
 
+  // Cleanup old URLs when new files are loaded
+  useEffect(() => {
+    return () => {
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+    };
+  }, [videoUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (gifUrl) URL.revokeObjectURL(gifUrl);
+    };
+  }, [gifUrl]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      
+
       // Validate Type
       if (!selectedFile.type.startsWith('video/')) {
         setError('Please upload a valid video file (.mp4, .mov)');
@@ -48,7 +56,6 @@ export default function App() {
       setVideoUrl(URL.createObjectURL(selectedFile));
       setStatus('idle');
       setGifUrl(null);
-      setAiCaption(null);
       setError(null);
     }
   };
@@ -80,30 +87,11 @@ export default function App() {
     }
   };
 
-  const handleMagicCaption = async () => {
-    if (!file) return;
-    setIsAiLoading(true);
-    try {
-      // 1. Extract frame
-      const frameBlob = await ffmpegService.extractFrame(file);
-      // 2. Ask Gemini
-      const result = await geminiService.generateCaption(frameBlob);
-      setAiCaption(result);
-    } catch (err) {
-      console.error(err);
-      // Fallback
-      setAiCaption({ caption: "Look at this!", hashtags: ["#wow"] });
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
-
   const handleReset = () => {
     setFile(null);
     setVideoUrl(null);
     setGifUrl(null);
     setStatus('idle');
-    setAiCaption(null);
     setProgress(0);
     setError(null);
   };
@@ -111,8 +99,6 @@ export default function App() {
   const handleRetry = () => {
     setError(null);
     setStatus('idle');
-    // If we have a file, we are effectively just clearing the error state so they can try again
-    // If the error was fatal initialization, trying again will re-trigger the load() call
   };
 
   const formatBytes = (bytes: number) => {
@@ -138,7 +124,7 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="w-full max-w-5xl flex-1">
-        
+
         {/* Error Banner */}
         {error && (
           <div className="mb-6 p-4 bg-red-900/30 border border-red-800/50 rounded-lg flex flex-col md:flex-row items-center gap-3 text-red-200">
@@ -159,8 +145,8 @@ export default function App() {
         {/* State 1: Upload */}
         {!file && (
           <div className="w-full h-80 border-2 border-dashed border-slate-700 hover:border-brand-500 hover:bg-slate-800/30 rounded-2xl transition-all flex flex-col items-center justify-center gap-4 cursor-pointer group relative bg-slate-900/50">
-             <input 
-              type="file" 
+             <input
+              type="file"
               accept="video/mp4,video/quicktime,video/x-m4v"
               onChange={handleFileChange}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
@@ -178,7 +164,7 @@ export default function App() {
         {/* State 2: Editor */}
         {file && videoUrl && !gifUrl && status !== 'processing' && status !== 'loading_ffmpeg' && (
           <div className="h-[600px]">
-            <VideoEditor 
+            <VideoEditor
               videoUrl={videoUrl}
               onConfirm={handleGenerate}
               onCancel={handleReset}
@@ -211,7 +197,7 @@ export default function App() {
         {gifUrl && status === 'completed' && (
           <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
              <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8">
-               
+
                {/* Left: Result Image */}
                <div className="flex-1 flex flex-col items-center gap-4">
                  <div className="relative rounded-lg overflow-hidden border border-slate-700 bg-black/50 shadow-inner">
@@ -229,40 +215,9 @@ export default function App() {
                    <p className="text-slate-400 text-sm">Your GIF has been successfully generated.</p>
                  </div>
 
-                 {/* Magic Caption Section */}
-                 <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Sparkles className="w-4 h-4 text-purple-400" />
-                      <h3 className="text-sm font-semibold text-purple-200">AI Magic Caption</h3>
-                    </div>
-                    
-                    {!aiCaption ? (
-                      <div className="text-center py-2">
-                        <Button 
-                          onClick={handleMagicCaption} 
-                          isLoading={isAiLoading}
-                          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 border-none"
-                        >
-                          <Wand2 className="w-4 h-4 mr-2" />
-                          Generate Caption
-                        </Button>
-                        <p className="text-xs text-slate-500 mt-2">Uses Gemini Vision to write a funny caption.</p>
-                      </div>
-                    ) : (
-                      <div className="animate-in fade-in slide-in-from-bottom-2">
-                        <p className="text-white font-medium text-lg italic mb-2">"{aiCaption.caption}"</p>
-                        <div className="flex flex-wrap gap-1">
-                          {aiCaption.hashtags.map(tag => (
-                            <span key={tag} className="text-xs text-purple-300 bg-purple-900/30 px-2 py-1 rounded-full">{tag}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                 </div>
-
                  <div className="flex flex-col gap-3 mt-auto">
-                    <a 
-                      href={gifUrl} 
+                    <a
+                      href={gifUrl}
                       download={`gifsmith-${Date.now()}.gif`}
                       className="w-full"
                     >

@@ -9,6 +9,7 @@ export interface GifSettings {
   fps: number;
   speed: number;
   quality: 'low' | 'medium' | 'high';
+  outputWidth: number; // Custom output width in pixels
   crop: CropArea | null;
   startTime: number;
   endTime: number;
@@ -20,9 +21,4 @@ export interface GeneratedGif {
   url: string;
   blob: Blob;
   size: number; // in bytes
-}
-
-export interface AiCaptionResult {
-  caption: string;
-  hashtags: string[];
 }
