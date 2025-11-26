@@ -1,6 +1,6 @@
 # GifSmith
 
-A professional-grade, client-side video-to-GIF converter built with React and TypeScript. Convert your videos to high-quality GIFs with precise cropping, speed control, and AI-powered caption generation - all processed locally in your browser for maximum privacy.
+A professional-grade, client-side video-to-GIF converter built with React and TypeScript. Convert your videos to high-quality GIFs with precise cropping, speed control, and frame rate adjustments - all processed locally in your browser for maximum privacy.
 
 ## Features
 
@@ -9,14 +9,12 @@ A professional-grade, client-side video-to-GIF converter built with React and Ty
 - **Quality Control** - Three output presets (Low/Medium/High) optimized for different use cases
 - **Speed Adjustment** - Create slow-motion (0.5x) or sped-up (2x) GIFs
 - **Frame Rate Control** - Adjustable FPS (5-30) for smooth animations or smaller file sizes
-- **AI Magic Captions** - Generate witty captions and hashtags using Google Gemini Vision (optional)
 - **Optimized Output** - Two-pass encoding with palette generation for vibrant, compact GIFs
 
 ## Tech Stack
 
 - **React 19** with TypeScript
 - **FFmpeg WASM** (0.10.1) - Video processing in the browser
-- **Google Gemini API** - AI caption generation
 - **Vite** - Fast build tooling
 - **Tailwind CSS** - Styling
 - **react-easy-crop** - Video cropping interface
@@ -41,23 +39,12 @@ A professional-grade, client-side video-to-GIF converter built with React and Ty
    npm install
    ```
 
-3. (Optional) Set up AI Captions:
-
-   Create a `.env.local` file in the root directory:
-   ```
-   GEMINI_API_KEY=your_gemini_api_key_here
-   ```
-
-   Get your API key from [Google AI Studio](https://aistudio.google.com/apikey).
-
-   > Note: The app works without the API key - AI captions will use fallback text instead.
-
-4. Start the development server:
+3. Start the development server:
    ```bash
    npm run dev
    ```
 
-5. Open [http://localhost:5173](http://localhost:5173) in your browser.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Run with AI Studio
 
@@ -68,9 +55,7 @@ View and edit your app in AI Studio: https://ai.studio/apps/drive/1EL5NVrliAB8fU
    npm install
    ```
 
-2. Set the `GEMINI_API_KEY` in `.env.local` to your Gemini API key
-
-3. Run the app:
+2. Run the app:
    ```bash
    npm run dev
    ```
@@ -103,20 +88,9 @@ View and edit your app in AI Studio: https://ai.studio/apps/drive/1EL5NVrliAB8fU
    vercel --prod
    ```
 
-### Environment Variables on Vercel
-
-If you want AI captions to work in production:
-
-1. Go to your Vercel project dashboard
-2. Navigate to **Settings** > **Environment Variables**
-3. Add a new variable:
-   - Name: `GEMINI_API_KEY`
-   - Value: Your Gemini API key
-4. Redeploy for changes to take effect
-
 ### Important: Cross-Origin Headers
 
-For FFmpeg WASM to work properly, your deployment needs specific security headers. Add a `vercel.json` file to your project root:
+For FFmpeg WASM to work properly, your deployment needs specific security headers. The project includes a `vercel.json` file that configures these automatically:
 
 ```json
 {
@@ -183,11 +157,6 @@ The video codec may not be compatible:
 - Increase the frame rate (higher FPS = smoother but larger)
 - For best results, use videos with good lighting and minimal fast motion
 
-### AI captions not working
-- Verify your `GEMINI_API_KEY` is set correctly in `.env.local`
-- Check the browser console for API errors
-- The feature will use fallback captions if the API is unavailable
-
 ## How It Works
 
 1. **Upload** - Select a video file (validated for type and size)
@@ -196,7 +165,7 @@ The video codec may not be compatible:
    - Pre-process video (apply filters, crop, scale)
    - Generate optimized 256-color palette
    - Render final GIF with dithering
-4. **Download** - Get your optimized GIF with optional AI caption
+4. **Download** - Get your optimized GIF
 
 ## License
 

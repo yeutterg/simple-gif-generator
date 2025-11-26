@@ -21,8 +21,3 @@ export interface GeneratedGif {
   blob: Blob;
   size: number; // in bytes
 }
-
-export interface AiCaptionResult {
-  caption: string;
-  hashtags: string[];
-}
